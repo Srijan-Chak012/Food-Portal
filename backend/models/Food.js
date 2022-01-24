@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 // Create Schema
 const FoodSchema = new Schema({
+	id: {
+		type: String,
+		required: true
+	},
 	name: {
 		type: String,
 		required: true

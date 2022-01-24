@@ -66,7 +66,9 @@ const Signup = (props) => {
   const onChangeEnd = (event) => {
     setEndtime(event.target.value);
   };
-
+  const refreshPage = () => {
+    window.location.reload();
+  }
   const resetInputs = () => {
     setName("");
     setEmail("");
@@ -82,7 +84,7 @@ const Signup = (props) => {
 
   const onSubmit = (event) => {
     event.preventDefault();
-
+    refreshPage();
     const newUser = {
       name: name,
       email: email,

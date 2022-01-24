@@ -10,10 +10,12 @@ import { SystemSecurityUpdateRounded } from "@mui/icons-material";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
+import {v4 as uuid} from "uuid"; 
 import { Box } from "@mui/system";
 
 const AddItems = (props) => {
     const [name, setName] = useState("");
+    const [id, setId] = useState("");
     const [email, setEmail] = useState("");
     const [price, setPrice] = useState("");
     const [rating, setRating] = useState("");
@@ -94,6 +96,7 @@ const AddItems = (props) => {
         event.preventDefault();
 
         const newFood = {
+            id: uuid(),
             name: name,
             email: auth_email,
             price: price,
