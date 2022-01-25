@@ -63,8 +63,7 @@ const Home = (props) => {
       });
   }, [])
 
-  if(details.type === 'Buyer')
-  {
+  if (details.type === 'Buyer') {
     navigate("/users")
   }
 
@@ -75,7 +74,6 @@ const Home = (props) => {
       .then((response) => {
         alert("Deleted " + fooditem.name);
         // console.log(response.data);
-        refreshPage();
       });
   };
 
@@ -84,8 +82,6 @@ const Home = (props) => {
     localStorage.setItem('FoodId', fooditem.id);
     navigate("/edititems")
   };
-  
-
 
   console.log(fooddetails);
   return (

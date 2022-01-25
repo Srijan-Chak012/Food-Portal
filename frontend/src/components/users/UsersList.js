@@ -31,8 +31,10 @@ const UsersList = (props) => {
   const [sortName, setSortName] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [auth_email, setAuthEmail] = useState("");
-
+  console.log(favorites);
   const navigate = useNavigate();
+
+
 
   if (window.localStorage.length === 0) {
     navigate("/signup")
@@ -83,17 +85,16 @@ const UsersList = (props) => {
   };
 
   const AddFav = (fooditem) => {
-    //console.log("Hi")
-    let temp = favorites;
-    temp.push(fooditem.id);
-    console.log(temp);
-    setFavorites(temp);
-    alert("Favorited Food " + fooditem.name);
+    //console.log("Hi"
+  //  alert("Favorited Food " + fooditem.name);
+    setFavorites([...favorites, fooditem]);
+    console.log(favorites);
   };
 
+  console.log(favorites);
   const RemoveFav = (fooditem) => {
     //console.log("Hi")
-    favorites.splice(favorites.indexOf(fooditem.id), 1);
+    favorites.splice(favorites.indexOf(fooditem), 1);
     alert("Unfavorited Food " + fooditem.name);
   };
 
@@ -103,10 +104,18 @@ const UsersList = (props) => {
     });
   }
 
+  const buyItems = (fooditem) => {
+    //console.log("Hi")
+    localStorage.setItem('FoodId', fooditem.id);
+    navigate("/buyitems")
+  };
+
   const customFunction = (event) => {
     console.log(event.target.value);
     setSearchText(event.target.value);
   };
+  console.log(favorites);
+
 
   return (
     <div>
@@ -188,8 +197,8 @@ const UsersList = (props) => {
               <h2>Favorites</h2>
             </Grid>
           </Paper>
-
           {favorites.map((fooditem) =>
+          
             <Grid sx={{ margin: 'auto', maxWidth: 500, flexGrow: 1 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm container>
@@ -223,7 +232,7 @@ const UsersList = (props) => {
                         <br></br>
                         Rating: {fooditem.rating}
                         <br></br>
-                        {(checkExisting(favorites, fooditem.id) ? (
+                        {(checkExisting(favorites, fooditem) ? (
                           <Button variant="contained" onClick={() => RemoveFav(fooditem)}>
                             Remove Favorites
                           </Button>
@@ -231,7 +240,7 @@ const UsersList = (props) => {
                           Add Favorites
                         </Button>)}
                         &emsp;
-                        <Button variant="contained" onClick={() => customFunction(fooditem)}>
+                        <Button variant="contained" onClick={() => buyItems(fooditem)}>
                           Buy Item
                         </Button>
                       </Typography>
@@ -289,7 +298,7 @@ const UsersList = (props) => {
                           Add Favorites
                         </Button>)}
                         &emsp;
-                        <Button variant="contained" onClick={() => customFunction(fooditem)}>
+                        <Button variant="contained" onClick={() => buyItems(fooditem)}>
                           Buy Item
                         </Button>
                       </Typography>

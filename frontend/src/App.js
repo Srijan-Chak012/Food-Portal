@@ -9,6 +9,7 @@ import Navbar from "./components/templates/Navbar";
 import Profile from "./components/users/Profile";
 import AddItems from "./components/common/AddItems";
 import EditItems from "./components/common/EditItems";
+import BuyItems from "./components/common/BuyItems";
 
 const Layout = () => {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="additems" element={<AddItems />} />
           <Route path="edititems" element={<EditItems />} />
+          <Route path="buyitems" element={<BuyItems />} />
         </Route>
       </Routes>
     </BrowserRouter>

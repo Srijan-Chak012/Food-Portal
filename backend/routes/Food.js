@@ -4,6 +4,7 @@ var router = express.Router();
 
 // Load User model
 const Food = require("../models/Food");
+const Order = require("../models/Orders");
 
 router.post("/", (req, res) => {
     // Find user by email
@@ -152,6 +153,57 @@ router.post("/itemupdate", (req, res) => {
                 });
         }
     });
+});
+
+
+router.post("/orderadd", (req, res) => {
+    console.log(req.body);
+
+    const newOrder = new Order({
+        id: req.body.id,
+        foodid: req.body.foodid,
+        foodname: req.body.foodname,
+        vendoremail: req.body.vendoremail,
+        cost: req.body.cost,
+        rating: req.body.rating,
+        addons: req.body.addons
+    });
+
+    console.log(newOrder);
+    console.log("Hi");
+    newOrder.save()
+        .then(user => {
+            res.status(200).json(user);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(401).send(err);
+        });
+});
+
+router.post("/favorites", (req, res) => {
+    console.log(req.body);
+
+    const newOrder = new Order({
+        id: req.body.id,
+        foodid: req.body.foodid,
+        foodname: req.body.foodname,
+        vendoremail: req.body.vendoremail,
+        cost: req.body.cost,
+        rating: req.body.rating,
+        addons: req.body.addons
+    });
+
+    console.log(newOrder);
+    console.log("Hi");
+    newOrder.save()
+        .then(user => {
+            res.status(200).json(user);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(401).send(err);
+        });
 });
 
 module.exports = router;

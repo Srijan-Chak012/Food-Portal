@@ -39,6 +39,7 @@ const Login = (props) => {
         console.log(newUser);
         localStorage.setItem('Authentication', newUser.email);
         navigate("/")
+        window.location.reload();
       });
 
     resetInputs();
