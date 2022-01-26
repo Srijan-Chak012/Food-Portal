@@ -30,7 +30,14 @@ const OrderSchema = new Schema({
     addons: {
         type: Array,
         required: true
+    },
+    status: {
+        type: Number,
+        required: true
     }
 });
+
+
+
 
 module.exports = Order = mongoose.model("Order", OrderSchema);

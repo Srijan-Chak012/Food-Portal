@@ -111,7 +111,8 @@ const BuyItems = (props) => {
             vendoremail: details.email,
             cost: details.price*quantity,
             rating: 0,
-            addons: details.addons
+            addons: details.addons,
+            status: 0
         }
 
         console.log(newFood);

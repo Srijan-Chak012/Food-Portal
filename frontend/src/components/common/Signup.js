@@ -66,6 +66,7 @@ const Signup = (props) => {
   const onChangeEnd = (event) => {
     setEndtime(event.target.value);
   };
+  
   const refreshPage = () => {
     window.location.reload();
   }

@@ -5,6 +5,7 @@ var router = express.Router();
 // Load User model
 const Food = require("../models/Food");
 const Order = require("../models/Orders");
+const Vendor = require("../models/Vendors");
 
 router.post("/", (req, res) => {
     // Find user by email
@@ -113,6 +114,51 @@ router.post("/deleteitem", (req, res) => {
         });
 });
 
+router.post("/itemdetails", (req, res) => {
+    const id = req.body.id;
+    console.log(req.body)
+    // Find user by email
+    Food.findOne({ id }).then(food => {
+        console.log(id);
+        // Check if user email exists
+        if (!food) {
+            return res.status(401).json({
+                error: "Item not found",
+            });
+        }
+        else {
+            return res.status(200).json(food);
+        }
+    });
+});
+
+router.post("/shopname", (req, res) => {
+    const email = req.body.email;
+    console.log(req.body)
+    // Find user by email
+    Vendor.aggregate([
+        {
+            $lookup: {
+                from: "foods",
+                localField: "email",
+                foreignField: "email",
+                as:"foods"
+            },
+        },
+    ])
+    .then((products) =>{
+        console.log(products);
+        console.log("Right here")
+        return res.status(200).json(products);
+    })
+    .catch(err => {
+        console.log(err);
+        console.log("Right here")
+        res.status(401).send(err);
+    });
+});
+
+
 router.post("/itemupdate", (req, res) => {
     const id = req.body.id;
     // Find user by email
@@ -155,7 +201,6 @@ router.post("/itemupdate", (req, res) => {
     });
 });
 
-
 router.post("/orderadd", (req, res) => {
     console.log(req.body);
 
@@ -166,32 +211,8 @@ router.post("/orderadd", (req, res) => {
         vendoremail: req.body.vendoremail,
         cost: req.body.cost,
         rating: req.body.rating,
-        addons: req.body.addons
-    });
-
-    console.log(newOrder);
-    console.log("Hi");
-    newOrder.save()
-        .then(user => {
-            res.status(200).json(user);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(401).send(err);
-        });
-});
-
-router.post("/favorites", (req, res) => {
-    console.log(req.body);
-
-    const newOrder = new Order({
-        id: req.body.id,
-        foodid: req.body.foodid,
-        foodname: req.body.foodname,
-        vendoremail: req.body.vendoremail,
-        cost: req.body.cost,
-        rating: req.body.rating,
-        addons: req.body.addons
+        addons: req.body.addons,
+        status: req.body.status
     });
 
     console.log(newOrder);

@@ -2,9 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Paper from "@mui/material/Paper";
+import { useTheme } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Select from '@mui/material/Select';
 import TableRow from "@mui/material/TableRow";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -17,6 +24,7 @@ import Divider from "@mui/material/Divider";
 import Autocomplete from "@mui/material/Autocomplete";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
+import Checkbox from '@mui/material/Checkbox';
 
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -25,16 +33,19 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 const UsersList = (props) => {
   const [items, setItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [shopnames, setShopNames] = useState([]);
+  const [selectshops, setSelectShops] = useState([]);
+  const [fooddetails, setFoodDetails] = useState([]);
   const [details, setDetails] = useState([]);
   const [users, setUsers] = useState([]);
   const [sortedUsers, setSortedUsers] = useState([]);
   const [sortName, setSortName] = useState(true);
+  const [checked, setChecked] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [auth_email, setAuthEmail] = useState("");
   console.log(favorites);
   const navigate = useNavigate();
-
-
+  const theme = useTheme();
 
   if (window.localStorage.length === 0) {
     navigate("/signup")
@@ -44,6 +55,44 @@ const UsersList = (props) => {
     if (!auth_email)
       setAuthEmail(localStorage.getItem('Authentication'));
   }
+
+
+  const ITEM_HEIGHT = 48;
+  const ITEM_PADDING_TOP = 8;
+
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250,
+      },
+    },
+  };
+
+
+  function getStyles(name, selectshops, theme) {
+    return {
+      fontWeight:
+        selectshops.indexOf(name) === -1
+          ? theme.typography.fontWeightRegular
+          : theme.typography.fontWeightMedium,
+    };
+  }
+
+  const checkChanged = (event) => {
+    setChecked(event.target.checked);
+  };
+
+  const shopChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+
+    setSelectShops(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
 
   console.log(auth_email);
   useEffect(() => {
@@ -69,6 +118,20 @@ const UsersList = (props) => {
 
   }, []);
 
+  useEffect(() => {
+    axios
+      .post("http://localhost:4000/food/shopname", { email: auth_email })
+      .then((response) => {
+        //  console.log("Repeat?");
+        setShopNames(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+  }, []);
+
+  console.log(shopnames);
   console.log(items);
   const sortChange = () => {
     let usersTemp = users;
@@ -86,9 +149,11 @@ const UsersList = (props) => {
 
   const AddFav = (fooditem) => {
     //console.log("Hi"
-  //  alert("Favorited Food " + fooditem.name);
+    //  alert("Favorited Food " + fooditem.name);
     setFavorites([...favorites, fooditem]);
+    details.favorites.push(fooditem.id);
     console.log(favorites);
+    console.log(details.favorites);
   };
 
   console.log(favorites);
@@ -96,6 +161,15 @@ const UsersList = (props) => {
     //console.log("Hi")
     favorites.splice(favorites.indexOf(fooditem), 1);
     alert("Unfavorited Food " + fooditem.name);
+
+    axios
+      .post("http://localhost:4000/food/deletefav", { id: fooditem.id })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
 
   function checkExisting(arr, val) {
@@ -115,8 +189,8 @@ const UsersList = (props) => {
     setSearchText(event.target.value);
   };
   console.log(favorites);
-
-
+  console.log(shopnames);
+  console.log(shopnames.shop);
   return (
     <div>
       <Grid container>
@@ -153,7 +227,7 @@ const UsersList = (props) => {
             <ListItem>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  Price (Dummy filter)
+                  Price
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
@@ -172,22 +246,82 @@ const UsersList = (props) => {
               </Grid>
             </ListItem>
             <Divider />
-            <ListItem divider>
-              <Autocomplete
-                id="combo-box-demo"
-                options={users}
-                getOptionLabel={(option) => option.name}
-                fullWidth
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select Names"
-                    variant="outlined"
-                  />
-                )}
-              />
-            </ListItem>
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel id="demo-multiple-name-label">Shop(s)</InputLabel>
+              <Select
+                labelId="demo-multiple-name-label"
+                id="demo-multiple-name"
+                multiple
+                value={selectshops}
+                onChange={shopChange}
+                input={<OutlinedInput label="Name" />}
+                MenuProps={MenuProps}
+              > {shopnames ?
+                shopnames.map((items) => (
+                  <MenuItem
+                    key={items.shop}
+                    value={items.shop}
+                    style={getStyles(items.shop, selectshops, theme)}
+                  >
+                    {items.shop}
+                  </MenuItem>
+                ))
+                : ""}
+
+              </Select>
+            </FormControl>
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel id="demo-multiple-name-label">Shop(s)</InputLabel>
+              <Select
+                labelId="demo-multiple-name-label"
+                id="demo-multiple-name"
+                multiple
+                value={selectshops}
+                onChange={shopChange}
+                input={<OutlinedInput label="Name" />}
+                MenuProps={MenuProps}
+              > {shopnames && shopnames.shops ?
+                shopnames.shops.map((name) => (
+                  <MenuItem
+                    key={name}
+                    value={name}
+                    style={getStyles(name, selectshops, theme)}
+                  >
+                    {name}
+                  </MenuItem>
+                ))
+                : 
+                ""
+                }
+
+              </Select>
+            </FormControl>
             <Divider />
+            <FormControlLabel
+              value="Veg"
+              control={
+                <Checkbox
+                  checked={checked}
+                  onChange={checkChanged}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              }
+              label="Veg"
+              labelPlacement="start"
+            />
+
+            <FormControlLabel
+              value="Non-Veg"
+              control={
+                <Checkbox
+                  checked={checked}
+                  onChange={checkChanged}
+                  inputProps={{ 'aria-label': 'controlled' }}
+                />
+              }
+              label="NonVeg"
+              labelPlacement="start"
+            />
 
           </List>
         </Grid>
@@ -197,8 +331,8 @@ const UsersList = (props) => {
               <h2>Favorites</h2>
             </Grid>
           </Paper>
-          {favorites.map((fooditem) =>
-          
+          {/* {favorites.map((fooditem) =>
+
             <Grid sx={{ margin: 'auto', maxWidth: 500, flexGrow: 1 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm container>
@@ -233,7 +367,7 @@ const UsersList = (props) => {
                         Rating: {fooditem.rating}
                         <br></br>
                         {(checkExisting(favorites, fooditem) ? (
-                          <Button variant="contained" onClick={() => RemoveFav(fooditem)}>
+                          <Button variant="contained" onClick={() => AddFav(fooditem)}>
                             Remove Favorites
                           </Button>
                         ) : <Button variant="contained" onClick={() => AddFav(fooditem)}>
@@ -249,7 +383,7 @@ const UsersList = (props) => {
                 </Grid>
               </Grid>
             </Grid>
-          )}
+          )} */}
           <Paper>
             <Grid item xs={12} align={"center"}>
               <h2>Items Offered</h2>

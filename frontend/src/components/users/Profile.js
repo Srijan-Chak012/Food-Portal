@@ -103,7 +103,7 @@ const Profile = (props) => {
     axios
       .post("http://localhost:4000/user/profileupdate", newUser)
       .then((response) => {
-        alert("Updated\t" + response.data.email);
+        alert("Updated " + response.data.email);
         // console.log(response.data);
         refreshPage();
       });

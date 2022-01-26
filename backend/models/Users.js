@@ -34,6 +34,10 @@ const UserSchema = new Schema({
 	wallet: {
 		type: Number,
 		required: true
+	},
+	favorites: {
+		type: Array,
+		required: false
 	}
 });
 
