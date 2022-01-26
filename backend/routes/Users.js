@@ -118,9 +118,10 @@ router.post("/login", (req, res) => {
 
 router.post("/profile", (req, res) => {
     const email = req.body.email;
-    console.log(req.body)
+    console.log(req.body);
     // Find user by email
     Vendor.findOne({ email }).then(vendor => {
+        console.log("Hello");
         console.log(email);
         // Check if user email exists
         if (!vendor) {
@@ -174,6 +175,9 @@ router.post("/profileupdate", (req, res) => {
                     }
                     if (req.body.wallet) {
                         buyer.wallet = parseInt(req.body.wallet) + parseInt(buyer.wallet);
+                    }
+                    if (req.body.favorites) {
+                        buyer.favorites = req.body.favorites;
                     }
 
 

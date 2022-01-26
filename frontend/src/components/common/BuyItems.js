@@ -29,6 +29,7 @@ const BuyItems = (props) => {
     const [toadd, settoAdd] = useState("");
     const [toaddtags, settoAddTags] = useState("");
     const [auth_id, setAuthId] = useState("");
+    const [auth_email, setAuthEmail] = useState("");
     console.log(auth_id);
 
     const navigate = useNavigate();
@@ -109,7 +110,9 @@ const BuyItems = (props) => {
             foodid: details.id,
             foodname: details.name,
             vendoremail: details.email,
+            buyeremail: auth_email,
             cost: details.price*quantity,
+            quantity: quantity,
             rating: 0,
             addons: details.addons,
             status: 0

@@ -32,17 +32,25 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const UsersList = (props) => {
   const [items, setItems] = useState([]);
+  const [fooditems, setFoodItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [shopnames, setShopNames] = useState([]);
   const [selectshops, setSelectShops] = useState([]);
+  const [selecttags, setSelectTags] = useState([]);
   const [fooddetails, setFoodDetails] = useState([]);
   const [details, setDetails] = useState([]);
   const [users, setUsers] = useState([]);
   const [sortedUsers, setSortedUsers] = useState([]);
   const [sortName, setSortName] = useState(true);
-  const [checked, setChecked] = useState(true);
+  const [vegchecked, setVegChecked] = useState(true);
+  const [nonvegchecked, setNonVegChecked] = useState(true);
+  const [sorttype, setSortType] = useState("");
   const [searchText, setSearchText] = useState("");
   const [auth_email, setAuthEmail] = useState("");
+  const [favoriteids, setFavoriteIds] = useState("");
+  const [minprice, setMinPrice] = useState("");
+  const [maxprice, setMaxPrice] = useState("");
+  const [id, setId] = useState("");
   console.log(favorites);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -79,8 +87,24 @@ const UsersList = (props) => {
     };
   }
 
-  const checkChanged = (event) => {
-    setChecked(event.target.checked);
+  const checkVegChanged = (event) => {
+    setVegChecked(event.target.checked);
+  };
+
+  const onChangeMinPrice = (event) => {
+    setMinPrice(event.target.value);
+  };
+
+  const onChangeMaxPrice = (event) => {
+    setMaxPrice(event.target.value);
+  };
+
+  const checkNonVegChanged = (event) => {
+    setNonVegChecked(event.target.checked);
+  };
+
+  const onChangeSortType = (event) => {
+    setSortType(event.target.value);
   };
 
   const shopChange = (event) => {
@@ -94,6 +118,17 @@ const UsersList = (props) => {
     );
   };
 
+  const tagChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+
+    setSelectTags(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
   console.log(auth_email);
   useEffect(() => {
     axios
@@ -101,10 +136,12 @@ const UsersList = (props) => {
       .then((response) => {
         //  console.log("Repeat?");
         setDetails(response.data);
+        setFavoriteIds(details.favorites);
         axios
           .post("http://localhost:4000/food")
           .then((response) => {
             setItems(response.data);
+            setFoodItems(response.data);
             setSortedUsers(response.data);
             setSearchText("");
           })
@@ -131,8 +168,26 @@ const UsersList = (props) => {
 
   }, []);
 
+  useEffect(() => {
+    let temp = fooditems.filter(fooditem => (fooditem.category == "Veg" && vegchecked == true) || (fooditem.category == "NonVeg" && nonvegchecked == true));
+
+    //if(minprice && maxprice)
+    //temp = temp.filter(fooditem => (parseInt(fooditem.price) >= parseInt(minprice)) && (parseInt(fooditem.price) <= parseInt(maxprice)));
+
+    temp = temp.filter(fooditem => 
+      fooditem.tags.some((itemtag) =>
+        selecttags.some((selectedtag) => 
+          itemtag.name == selectedtag)
+          )
+      ); 
+
+    setItems(temp);
+    console.log(temp)
+  }, [vegchecked, nonvegchecked, minprice, maxprice, selecttags]);
+
   console.log(shopnames);
   console.log(items);
+  console.log(fooditems);
   const sortChange = () => {
     let usersTemp = users;
     const flag = sortName;
@@ -154,22 +209,31 @@ const UsersList = (props) => {
     details.favorites.push(fooditem.id);
     console.log(favorites);
     console.log(details.favorites);
-  };
-
-  console.log(favorites);
-  const RemoveFav = (fooditem) => {
-    //console.log("Hi")
-    favorites.splice(favorites.indexOf(fooditem), 1);
-    alert("Unfavorited Food " + fooditem.name);
-
     axios
-      .post("http://localhost:4000/food/deletefav", { id: fooditem.id })
+      .post("http://localhost:4000/user/profileupdate", { email: auth_email, favorites: details.favorites })
       .then((response) => {
         console.log(response.data);
       })
       .catch(function (error) {
         console.log(error);
       });
+    console.log("Favorite added");
+  };
+  const RemoveFav = (fooditem) => {
+    //console.log("Hi")
+    let temp = details.favorites.filter(id => id != fooditem.id);
+    console.log(temp);
+    details.favorites = temp;
+    console.log(details.favorites);
+    axios
+      .post("http://localhost:4000/user/profileupdate", { email: auth_email, favorites: details.favorites })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    console.log("Removed Favorite");
   };
 
   function checkExisting(arr, val) {
@@ -188,9 +252,12 @@ const UsersList = (props) => {
     console.log(event.target.value);
     setSearchText(event.target.value);
   };
-  console.log(favorites);
   console.log(shopnames);
   console.log(shopnames.shop);
+
+  console.log(selecttags);
+  console.log(selectshops);
+
   return (
     <div>
       <Grid container>
@@ -224,27 +291,28 @@ const UsersList = (props) => {
       <Grid container>
         <Grid item xs={12} md={3} lg={3}>
           <List component="nav" aria-label="mailbox folders">
-            <ListItem>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  Price
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    id="standard-basic"
-                    label="Enter Min"
-                    fullWidth={true}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    id="standard-basic"
-                    label="Enter Max"
-                    fullWidth={true}
-                  />
-                </Grid>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                Price
               </Grid>
-            </ListItem>
+              <Grid item xs={6}>
+                <TextField
+                  id="standard-basic"
+                  label="Enter Min"
+                  value={minprice}
+                  onChange={onChangeMinPrice}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  id="standard-basic"
+                  label="Enter Max"
+                  value={maxprice}
+                  onChange={onChangeMaxPrice}
+                />
+              </Grid>
+            </Grid>
             <Divider />
             <FormControl sx={{ m: 1, width: 300 }}>
               <InputLabel id="demo-multiple-name-label">Shop(s)</InputLabel>
@@ -254,7 +322,7 @@ const UsersList = (props) => {
                 multiple
                 value={selectshops}
                 onChange={shopChange}
-                input={<OutlinedInput label="Name" />}
+                input={<OutlinedInput label="Shop" />}
                 MenuProps={MenuProps}
               > {shopnames ?
                 shopnames.map((items) => (
@@ -271,29 +339,46 @@ const UsersList = (props) => {
               </Select>
             </FormControl>
             <FormControl sx={{ m: 1, width: 300 }}>
-              <InputLabel id="demo-multiple-name-label">Shop(s)</InputLabel>
+              <InputLabel id="demo-multiple-name-label">Tag(s)</InputLabel>
               <Select
                 labelId="demo-multiple-name-label"
                 id="demo-multiple-name"
                 multiple
-                value={selectshops}
-                onChange={shopChange}
-                input={<OutlinedInput label="Name" />}
+                value={selecttags}
+                onChange={tagChange}
+                input={<OutlinedInput label="Tags" />}
                 MenuProps={MenuProps}
-              > {shopnames && shopnames.shops ?
-                shopnames.shops.map((name) => (
-                  <MenuItem
-                    key={name}
-                    value={name}
-                    style={getStyles(name, selectshops, theme)}
-                  >
-                    {name}
-                  </MenuItem>
+              > {shopnames ?
+                shopnames.map((item) => (
+                  item.foods.map((food) => (
+                    food.tags.map((tag) => (
+                      <MenuItem
+                        key={tag.name}
+                        value={tag.name}
+                        style={getStyles(tag.name, selectshops, theme)}
+                      >
+                        {tag.name}
+                      </MenuItem>
+                    ))
+                  ))
                 ))
-                : 
+                :
                 ""
                 }
-
+              </Select>
+            </FormControl>
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel id="demo-simple-select-label">Sort by:</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={sorttype}
+                label="SortType"
+                autoWidth
+                onChange={onChangeSortType}
+              >
+                <MenuItem value={"Price"}>Price</MenuItem>
+                <MenuItem value={"Rating"}>Rating</MenuItem>
               </Select>
             </FormControl>
             <Divider />
@@ -301,8 +386,9 @@ const UsersList = (props) => {
               value="Veg"
               control={
                 <Checkbox
-                  checked={checked}
-                  onChange={checkChanged}
+                  defaultChecked
+                  checked={vegchecked}
+                  onChange={checkVegChanged}
                   inputProps={{ 'aria-label': 'controlled' }}
                 />
               }
@@ -314,8 +400,8 @@ const UsersList = (props) => {
               value="Non-Veg"
               control={
                 <Checkbox
-                  checked={checked}
-                  onChange={checkChanged}
+                  checked={nonvegchecked}
+                  onChange={checkNonVegChanged}
                   inputProps={{ 'aria-label': 'controlled' }}
                 />
               }
@@ -331,59 +417,7 @@ const UsersList = (props) => {
               <h2>Favorites</h2>
             </Grid>
           </Paper>
-          {/* {favorites.map((fooditem) =>
 
-            <Grid sx={{ margin: 'auto', maxWidth: 500, flexGrow: 1 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm container>
-                  <Grid item xs container direction="column" spacing={2}>
-
-                    <Grid item xs>
-                      <Typography gutterBottom variant="subtitle1" component="div">
-                        {fooditem.name} &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; ₹{fooditem.price}
-                        <br></br>
-                        {fooditem.category}
-                        <br></br>
-                        Vendor Details: {fooditem.email}
-                        <br></br>
-                        <Typography gutterBottom variant="subtitle1" component="div">
-                          <br></br>
-                          Addons:
-                          {fooditem.addons.map((addon) =>
-                            <Typography variant="body2" color="text.secondary">
-                              {addon.name}, {addon.price}
-                            </Typography>
-                          )}
-                        </Typography>
-                        <Typography gutterBottom variant="subtitle1" component="div">
-                          Tags:
-                          {fooditem.tags.map((tagname) =>
-                            <Typography variant="body2" color="text.secondary">
-                              {tagname.name}
-                            </Typography>
-                          )}
-                        </Typography>
-                        <br></br>
-                        Rating: {fooditem.rating}
-                        <br></br>
-                        {(checkExisting(favorites, fooditem) ? (
-                          <Button variant="contained" onClick={() => AddFav(fooditem)}>
-                            Remove Favorites
-                          </Button>
-                        ) : <Button variant="contained" onClick={() => AddFav(fooditem)}>
-                          Add Favorites
-                        </Button>)}
-                        &emsp;
-                        <Button variant="contained" onClick={() => buyItems(fooditem)}>
-                          Buy Item
-                        </Button>
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          )} */}
           <Paper>
             <Grid item xs={12} align={"center"}>
               <h2>Items Offered</h2>
@@ -442,6 +476,7 @@ const UsersList = (props) => {
               </Grid>
             </Grid>
           )}
+
         </Grid>
       </Grid>
     </div>

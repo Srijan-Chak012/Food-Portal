@@ -62,7 +62,7 @@ const Navbar = () => {
           )}
 
           <Box sx={{ flexGrow: 1 }} />
-          
+
           <Button color="inherit" onClick={() => navigate("/users")}>
             Users
           </Button>
@@ -76,6 +76,12 @@ const Navbar = () => {
           {(!auth_email ? (
             <Button color="inherit" onClick={() => navigate("/login")}>
               Login
+            </Button>
+          ) : "")}
+
+          {(auth_email ? (
+            <Button color="inherit" onClick={() => navigate("/myorders")}>
+              My Orders
             </Button>
           ) : "")}
 

@@ -6,6 +6,7 @@ var router = express.Router();
 const Food = require("../models/Food");
 const Order = require("../models/Orders");
 const Vendor = require("../models/Vendors");
+const Buyer = require("../models/Users");
 
 router.post("/", (req, res) => {
     // Find user by email
@@ -56,6 +57,25 @@ router.post("/additems", (req, res) => {
 // POST request 
 // Login
 router.post("/details", (req, res) => {
+    const email = req.body.email;
+    // Find user by email
+    Food.find({ email }).then(food => {
+        console.log(req.body);
+        // Check if user email exists
+        if (!food) {
+
+            return res.status(400).json({
+                error: "No food item registered with this email",
+            });
+        }
+        else {
+            console.log(food);
+            return res.status(200).json(food);
+        }
+    });
+});
+
+router.post("/orderdetails", (req, res) => {
     const email = req.body.email;
     // Find user by email
     Food.find({ email }).then(food => {
@@ -142,22 +162,21 @@ router.post("/shopname", (req, res) => {
                 from: "foods",
                 localField: "email",
                 foreignField: "email",
-                as:"foods"
+                as: "foods"
             },
         },
     ])
-    .then((products) =>{
-        console.log(products);
-        console.log("Right here")
-        return res.status(200).json(products);
-    })
-    .catch(err => {
-        console.log(err);
-        console.log("Right here")
-        res.status(401).send(err);
-    });
+        .then((products) => {
+            console.log(products);
+            console.log("Right here")
+            return res.status(200).json(products);
+        })
+        .catch(err => {
+            console.log(err);
+            console.log("Right here")
+            res.status(401).send(err);
+        });
 });
-
 
 router.post("/itemupdate", (req, res) => {
     const id = req.body.id;
@@ -209,10 +228,12 @@ router.post("/orderadd", (req, res) => {
         foodid: req.body.foodid,
         foodname: req.body.foodname,
         vendoremail: req.body.vendoremail,
+        buyeremail: req.body.buyeremail,
         cost: req.body.cost,
         rating: req.body.rating,
         addons: req.body.addons,
-        status: req.body.status
+        status: req.body.status,
+        quantity: req.body.quantity
     });
 
     console.log(newOrder);
