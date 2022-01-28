@@ -107,6 +107,10 @@ const Signup = (props) => {
         alert("Created " + response.data.name);
         console.log(response.data);
         navigate("/login")
+      })
+      .catch(function (error) {
+        alert("Register failed")
+        console.log(error);
       });
 
     resetInputs();

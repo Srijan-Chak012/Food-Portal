@@ -15,7 +15,7 @@ const OrderSchema = new Schema({
         type: String,
         required: true
     },
-    vendoremail: {
+    shop: {
         type: String,
         required: true
     },
@@ -38,6 +38,14 @@ const OrderSchema = new Schema({
     status: {
         type: Number,
         required: true
+    },
+    quantity:{
+        type: Number,
+        required: true
+    },
+    statusstring: {
+        type: String,
+        required: false
     }
 });
 

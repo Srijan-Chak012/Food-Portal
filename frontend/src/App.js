@@ -11,6 +11,7 @@ import AddItems from "./components/common/AddItems";
 import EditItems from "./components/common/EditItems";
 import BuyItems from "./components/common/BuyItems";
 import MyOrders from "./components/common/MyOrders";
+import Stats from "./components/common/Stats";
 
 const Layout = () => {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="edititems" element={<EditItems />} />
           <Route path="buyitems" element={<BuyItems />} />
           <Route path="myorders" element={<MyOrders />} />
+          <Route path="stats" element={<Stats />} />
         </Route>
       </Routes>
     </BrowserRouter>

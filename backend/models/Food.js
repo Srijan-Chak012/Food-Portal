@@ -11,7 +11,7 @@ const FoodSchema = new Schema({
 		type: String,
 		required: true
 	},
-	email: {
+	shop: {
 		type: String,
 		required: true
 	},
@@ -34,6 +34,10 @@ const FoodSchema = new Schema({
 	tags: {
 		type: Array,
 		required: true
+	},
+	itemssold: {
+		type: Number,
+		required: false
 	}
 });
 

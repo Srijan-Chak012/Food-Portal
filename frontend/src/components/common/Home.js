@@ -48,10 +48,11 @@ const Home = (props) => {
         //  console.log("Repeat?");
         setDetails(response.data);
         axios
-          .post("http://localhost:4000/food/details", { email: auth_email })
-          .then((response) => {
-            setFoodDetails(response.data);
+          .post("http://localhost:4000/food/details", { shop: response.data.shop })
+          .then((response2) => {
+            setFoodDetails(response2.data);
             console.log(response.data);
+            console.log(response.data.shop);
             console.log(fooddetails);
           })
           .catch(function (error) {
@@ -63,6 +64,7 @@ const Home = (props) => {
       });
   }, [])
 
+  console.log(details);
   if (details.type === 'Buyer') {
     navigate("/users")
   }
@@ -123,7 +125,7 @@ const Home = (props) => {
                     <br></br>
                     {fooditem.category}
                     <br></br>
-                    Vendor Details: {fooditem.email}
+                    Vendor Details: {fooditem.shop}
                     <br></br>
                     <Typography gutterBottom variant="subtitle1" component="div">
                       <br></br>

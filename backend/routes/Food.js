@@ -36,12 +36,13 @@ router.post("/additems", (req, res) => {
     const newFood = new Food({
         id: req.body.id,
         name: req.body.name,
-        email: req.body.email,
+        shop: req.body.shop,
         price: req.body.price,
         rating: req.body.rating,
         category: req.body.category,
         addons: req.body.addons,
-        tags: req.body.tags
+        tags: req.body.tags,
+        itemssold: req.body.itemssold,
     });
 
     console.log(newFood);
@@ -57,15 +58,17 @@ router.post("/additems", (req, res) => {
 // POST request 
 // Login
 router.post("/details", (req, res) => {
-    const email = req.body.email;
+    const shop = req.body.shop;
     // Find user by email
-    Food.find({ email }).then(food => {
+    Food.find({ shop }).then(food => {
         console.log(req.body);
+        console.log("Moron");
+        console.log(shop);
         // Check if user email exists
         if (!food) {
 
             return res.status(400).json({
-                error: "No food item registered with this email",
+                error: "No food item registered with this shop",
             });
         }
         else {
@@ -76,20 +79,32 @@ router.post("/details", (req, res) => {
 });
 
 router.post("/orderdetails", (req, res) => {
-    const email = req.body.email;
+    const buyeremail = req.body.buyeremail;
+    const shop = req.body.shop;
+    console.log(buyeremail);
+    console.log(shop);
     // Find user by email
-    Food.find({ email }).then(food => {
-        console.log(req.body);
+    Order.find({ buyeremail }).then(order => {
+        console.log("Sleepy");
         // Check if user email exists
-        if (!food) {
-
-            return res.status(400).json({
-                error: "No food item registered with this email",
+        if (!order.length) {
+            Order.find({ shop }).then(orderitem => {
+                if (!orderitem) {
+                    return res.status(401).json({
+                        error: "No Order registered with this email",
+                    });
+                }
+                else {
+                    console.log("Vendor Order Details");
+                    console.log(orderitem);
+                    return res.status(200).json(orderitem);
+                }
             });
         }
         else {
-            console.log(food);
-            return res.status(200).json(food);
+            console.log("Order Details");
+            console.log(order);
+            return res.status(200).json(order);
         }
     });
 });
@@ -160,8 +175,8 @@ router.post("/shopname", (req, res) => {
         {
             $lookup: {
                 from: "foods",
-                localField: "email",
-                foreignField: "email",
+                localField: "shop",
+                foreignField: "shop",
                 as: "foods"
             },
         },
@@ -209,6 +224,10 @@ router.post("/itemupdate", (req, res) => {
                 food.tags = req.body.tags;
             }
 
+            if (req.body.itemssold) {
+                food.itemssold = req.body.itemssold;
+            }
+
             food.save()
                 .then(user => {
                     res.status(200).json(user);
@@ -220,7 +239,225 @@ router.post("/itemupdate", (req, res) => {
     });
 });
 
+router.post("/orderupdate", (req, res) => {
+    const id = req.body.orderid;
+    // Find user by email
+    console.log(id);
+    console.log(req.body);
+    Order.findOne({ id }).then(order => {
+        // Check if user email exists
+        if (!order) {
+            return res.status(401).json({
+                error: "Order not found",
+            });
+
+        }
+        else {
+            let temp = order.status;
+            if (temp < 4) {
+                temp = temp + 1;
+            }
+            console.log(temp);
+            let temp2 = order.statusstring;
+            console.log(temp2);
+            switch (parseInt(temp)) {
+                case 0: temp2 = "Placed";
+                    break;
+                case 1: temp2 = "Accepted";
+                    break;
+                case 2: temp2 = "Cooking";
+                    break;
+                case 3: temp2 = "Ready For Pickup"
+                    break;
+                case 4: temp2 = "Completed"
+                    break;
+                case 5: temp2 = "Rejected"
+                    break;
+            }
+            console.log(order.status);
+            order.status = temp;
+            order.statusstring = temp2;
+
+            order.save()
+                .then(user => {
+                    res.status(200).json(user);
+                    console.log(temp);
+                    console.log(temp2);
+                })
+                .catch(err => {
+                    res.status(401).send(err);
+                });
+        }
+    });
+});
+
+router.post("/ordernumbers", (req, res) => {
+    const shop = req.body.shop;
+    let completedorder = 0;
+    let pendingorder = 0;
+    let totalorder = 0;
+    // Find user by email
+    console.log("Yo mamma");
+    console.log(shop);
+    console.log(req.body);
+    Order.find({ shop }).then(order => {
+        // Check if user email exists
+        console.log("Your mom");
+        console.log(order);
+        console.log(order.length);
+        if (!order) {
+            return res.status(401).json({
+                error: "Order not found",
+            });
+
+        }
+        else {
+            let orderitem;
+            totalorder = order.length;
+            for (i = 0; i < order.length; i++) {
+                orderitem = order[i];
+                let temp = orderitem.status;
+                if (temp < 4) {
+                    pendingorder = pendingorder + 1;
+                }
+                
+                else if(temp == 4)
+                {
+                    completedorder = completedorder + 1;
+                }
+                console.log(orderitem.status);
+            }
+
+            let newObject = {
+                pendingorder: pendingorder,
+                completedorder: completedorder,
+                totalorder: totalorder
+            }
+
+            return res.status(200).json(newObject);
+        }
+    });
+});
+
+router.post("/orderrating", (req, res) => {
+    const id = req.body.orderid;
+    const rating = req.body.orderrating;
+    // Find user by email
+    console.log(id);
+    console.log(rating);
+    console.log(req.body);
+    Order.findOne({ id }).then(order => {
+        // Check if user email exists
+        if (!order) {
+            return res.status(401).json({
+                error: "Order not found",
+            });
+
+        }
+        else {
+            console.log(order.status);
+            order.rating = rating;
+
+            order.save()
+                .then(user => {
+                    res.status(200).json(user);
+                    console.log(rating);
+                })
+                .catch(err => {
+                    res.status(401).send(err);
+                });
+        }
+    });
+});
+
+router.post("/orderreject", (req, res) => {
+    const id = req.body.orderid;
+    const temp = req.body.setstatus;
+    // Find user by email
+    console.log(id);
+    console.log(temp);
+    console.log(req.body);
+    Order.findOne({ id }).then(order => {
+        // Check if user email exists
+        if (!order) {
+            return res.status(401).json({
+                error: "Order not found",
+            });
+
+        }
+        else {
+            if (temp < 4) {
+                temp = temp + 1;
+            }
+            console.log(temp);
+            let temp2 = order.statusstring;
+            console.log(temp2);
+            switch (parseInt(temp)) {
+                case 0: temp2 = "Placed";
+                    break;
+                case 1: temp2 = "Accepted";
+                    break;
+                case 2: temp2 = "Cooking";
+                    break;
+                case 3: temp2 = "Ready For Pickup"
+                    break;
+                case 4: temp2 = "Completed"
+                    break;
+                case 5: temp2 = "Rejected"
+                    break;
+            }
+            console.log(order.status);
+            order.status = temp;
+            order.statusstring = temp2;
+
+            order.save()
+                .then(user => {
+                    res.status(200).json(user);
+                    console.log(temp);
+                    console.log(temp2);
+                })
+                .catch(err => {
+                    res.status(401).send(err);
+                });
+        }
+    });
+});
+
 router.post("/orderadd", (req, res) => {
+    console.log("Mummy");
+    console.log(req.body);
+    let temp = req.body.status;
+    let temp2 = req.body.statusstring;
+    switch (temp) {
+        case 0: temp2 = "Placed"
+    }
+    const newOrder = new Order({
+        id: req.body.id,
+        foodid: req.body.foodid,
+        foodname: req.body.foodname,
+        shop: req.body.shop,
+        buyeremail: req.body.buyeremail,
+        cost: req.body.cost,
+        rating: req.body.rating,
+        addons: req.body.addons,
+        status: req.body.status,
+        quantity: req.body.quantity,
+        statusstring: temp2,
+    });
+
+    console.log(newOrder);
+    console.log("Hi");
+    newOrder.save()
+        .then(user => {
+            res.status(200).json(user);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(401).send(err);
+        });
+});
+
+router.post("/returntags", (req, res) => {
     console.log(req.body);
 
     const newOrder = new Order({

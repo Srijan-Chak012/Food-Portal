@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
@@ -10,7 +10,7 @@ import { SystemSecurityUpdateRounded } from "@mui/icons-material";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-import {v4 as uuid} from "uuid"; 
+import { v4 as uuid } from "uuid";
 import { Box } from "@mui/system";
 
 const AddItems = (props) => {
@@ -20,6 +20,7 @@ const AddItems = (props) => {
     const [price, setPrice] = useState("");
     const [rating, setRating] = useState("");
     const [category, setCategory] = useState("");
+    const [details, setDetails] = useState([]);
     const [addons, setAddons] = useState([]);
     const [currentaddon, setCurrentAddon] = useState("")
     const [addonprice, setAddonPrice] = useState("")
@@ -98,12 +99,13 @@ const AddItems = (props) => {
         const newFood = {
             id: uuid(),
             name: name,
-            email: auth_email,
+            shop: details.shop,
             price: price,
             rating: 0,
             category: category,
             addons: addons,
-            tags: tags
+            tags: tags,
+            itemssold: 0,
         }
 
         console.log(newFood);
@@ -117,6 +119,20 @@ const AddItems = (props) => {
 
         resetInputs();
     };
+
+
+    useEffect(() => {
+
+        axios
+            .post("http://localhost:4000/user/profile", { email: auth_email })
+            .then((response) => {
+                //  console.log("Repeat?");
+                setDetails(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }, [])
 
     const onAdding = (event) => {
         settoAdd(1);

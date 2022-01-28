@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Fuse from 'fuse.js'
 import axios from "axios";
 import Paper from "@mui/material/Paper";
 import { useTheme } from '@mui/material/styles';
@@ -50,6 +51,7 @@ const UsersList = (props) => {
   const [favoriteids, setFavoriteIds] = useState("");
   const [minprice, setMinPrice] = useState("");
   const [maxprice, setMaxPrice] = useState("");
+  const [search, setSearch] = useState("");
   const [id, setId] = useState("");
   console.log(favorites);
   const navigate = useNavigate();
@@ -130,6 +132,7 @@ const UsersList = (props) => {
   };
 
   console.log(auth_email);
+
   useEffect(() => {
     axios
       .post("http://localhost:4000/user/profile", { email: auth_email })
@@ -143,7 +146,7 @@ const UsersList = (props) => {
             setItems(response.data);
             setFoodItems(response.data);
             setSortedUsers(response.data);
-            setSearchText("");
+            setSearch("");
           })
           .catch((error) => {
             console.log(error);
@@ -171,37 +174,50 @@ const UsersList = (props) => {
   useEffect(() => {
     let temp = fooditems.filter(fooditem => (fooditem.category == "Veg" && vegchecked == true) || (fooditem.category == "NonVeg" && nonvegchecked == true));
 
-    //if(minprice && maxprice)
-    //temp = temp.filter(fooditem => (parseInt(fooditem.price) >= parseInt(minprice)) && (parseInt(fooditem.price) <= parseInt(maxprice)));
+    if (minprice && maxprice)
+      temp = temp.filter(fooditem => (parseInt(fooditem.price) >= parseInt(minprice)) && (parseInt(fooditem.price) <= parseInt(maxprice)));
 
-    temp = temp.filter(fooditem => 
+    temp = temp.filter(fooditem =>
+      selectshops.some((selectedshop) =>
+        fooditem.shop == selectedshop)
+
+    );
+
+    temp = temp.filter(fooditem =>
       fooditem.tags.some((itemtag) =>
-        selecttags.some((selectedtag) => 
-          itemtag.name == selectedtag)
-          )
-      ); 
-
+        selecttags.some((selectedtags) =>
+          itemtag.name == selectedtags)
+      )
+    );
     setItems(temp);
     console.log(temp)
-  }, [vegchecked, nonvegchecked, minprice, maxprice, selecttags]);
+  }, [vegchecked, nonvegchecked, minprice, maxprice, selecttags, selectshops]);
+
+
+
+  const onSearch = (event) => {
+    console.log(event.target.value);
+    setSearchText(event.target.value);
+  };
+
+  const fuse = new Fuse(fooditems, {
+    keys: ["name"],
+    includeScore: true,
+  })
+
+  console.log(fooditems);
+
+  useEffect(() => {
+    let temp;
+    temp = fuse.search(searchText).map((fooditem) => fooditem.item);
+    console.log(searchText);
+    console.log(temp);
+   setItems(temp);
+  }, [searchText])
 
   console.log(shopnames);
   console.log(items);
   console.log(fooditems);
-  const sortChange = () => {
-    let usersTemp = users;
-    const flag = sortName;
-    usersTemp.sort((a, b) => {
-      if (a.date != undefined && b.date != undefined) {
-        return (1 - flag * 2) * (new Date(a.date) - new Date(b.date));
-      } else {
-        return 1;
-      }
-    });
-    setUsers(usersTemp);
-    setSortName(!sortName);
-  };
-
   const AddFav = (fooditem) => {
     //console.log("Hi"
     //  alert("Favorited Food " + fooditem.name);
@@ -248,16 +264,33 @@ const UsersList = (props) => {
     navigate("/buyitems")
   };
 
-  const customFunction = (event) => {
-    console.log(event.target.value);
-    setSearchText(event.target.value);
+  const sortrd = () => {
+    //console.log("Hi")
+    const mydata = [].concat(items).sort((a, b) => (a.rating < b.rating ? 1 : -1));
+    setItems(mydata);
   };
+  const sortra = () => {
+    //console.log("Hi")
+    const mydata = [].concat(items).sort((a, b) => (a.rating > b.rating ? 1 : -1));
+    setItems(mydata);
+  };
+  const sortpa = () => {
+    //console.log("Hi")
+    const mydata = [].concat(items).sort((a, b) => (a.price > b.price ? 1 : -1));
+    setItems(mydata);
+  };
+  const sortpd = () => {
+    //console.log("Hi")
+    const mydata = [].concat(items).sort((a, b) => (a.price < b.price ? 1 : -1));
+    setItems(mydata);
+  };
+
   console.log(shopnames);
-  console.log(shopnames.shop);
+  // console.log(shopnames.shop);   
 
   console.log(selecttags);
   console.log(selectshops);
-
+  console.log(items);
   return (
     <div>
       <Grid container>
@@ -272,8 +305,9 @@ const UsersList = (props) => {
           <List component="nav" aria-label="mailbox folders">
             <TextField
               id="standard-basic"
-              label="Search"
+              placeholder="Search"
               fullWidth={true}
+              value={searchText}
               InputProps={{
                 endAdornment: (
                   <InputAdornment>
@@ -283,6 +317,7 @@ const UsersList = (props) => {
                   </InputAdornment>
                 ),
               }}
+              onChange={onSearch}
             // onChange={customFunction}
             />
           </List>
@@ -367,20 +402,6 @@ const UsersList = (props) => {
                 }
               </Select>
             </FormControl>
-            <FormControl sx={{ m: 1, width: 300 }}>
-              <InputLabel id="demo-simple-select-label">Sort by:</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={sorttype}
-                label="SortType"
-                autoWidth
-                onChange={onChangeSortType}
-              >
-                <MenuItem value={"Price"}>Price</MenuItem>
-                <MenuItem value={"Rating"}>Rating</MenuItem>
-              </Select>
-            </FormControl>
             <Divider />
             <FormControlLabel
               value="Veg"
@@ -408,7 +429,22 @@ const UsersList = (props) => {
               label="NonVeg"
               labelPlacement="start"
             />
-
+            <h2>Sort By:</h2>
+            <Button variant="contained" onClick={() => sortrd()}>
+              Rating, Descending
+            </Button>
+            <p></p>
+            <Button variant="contained" onClick={() => sortpd()}>
+              Price, Descending
+            </Button>
+            <p></p>
+            <Button variant="contained" onClick={() => sortra()}>
+              Rating, Ascending
+            </Button>
+            <p></p>
+            <Button variant="contained" onClick={() => sortpa()}>
+              Price, Ascending
+            </Button>
           </List>
         </Grid>
         <Grid item xs={12} md={9} lg={9}>
@@ -436,7 +472,7 @@ const UsersList = (props) => {
                         <br></br>
                         {fooditem.category}
                         <br></br>
-                        Vendor Details: {fooditem.email}
+                        Vendor Details: {fooditem.shop}
                         <br></br>
                         <Typography gutterBottom variant="subtitle1" component="div">
                           <br></br>
