@@ -7,7 +7,7 @@ const Food = require("../models/Food");
 const Order = require("../models/Orders");
 const Vendor = require("../models/Vendors");
 const Buyer = require("../models/Users");
-var nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 router.post("/", (req, res) => {
     // Find user by email
@@ -452,6 +452,40 @@ router.post("/orderreject", (req, res) => {
 
 router.post("/orderadd", (req, res) => {
     console.log("Mummy");
+
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            type: "OAuth2",
+            user: "canteenportal.vendor@gmail.com",
+            pass: "Srijan12",
+            clientId: "286999355505-ub6cailg5g7nc9l605md0hn3rq98mv6v.apps.googleusercontent.com",
+            clientSecret: "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",
+            refreshToken: "1//043M8gT9wqE2zCgYIARAAGAQSNwF-L9IrLMQ5aWxsZOFotKH2yhy-8Fuel9g-PlYj5kfP-J1g4kBG90WEHPSc7cIk9VQHbr_Mavw",
+        },
+    });
+
+    transporter.verify((err, success) => {
+        err
+            ? console.log(err)
+            : console.log(`=== Server is ready to take messages: ${success} ===`);
+    });
+
+    let mailOptions = {
+        from: "canteenportal.vendor@gmail.com",
+        to: req.body.buyeremail,
+        subject: "Nodemailer API",
+        text: "Your order has been placed, please wait!",
+    };
+
+    transporter.sendMail(mailOptions, function (err, data) {
+        if (err) {
+            console.log("Error " + err);
+        } else {
+            console.log("Email sent successfully");
+        }
+    });
+
     console.log(req.body);
     let temp = req.body.status;
     let temp2 = req.body.statusstring;
