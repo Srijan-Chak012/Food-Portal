@@ -95,6 +95,16 @@ const MyOrder = (props) => {
             .catch((error) => {
                 console.log(error);
             });
+
+        axios
+            .post("http://localhost:4000/user/profileupdate", { email: order.buyeremail, wallet: order.cost })
+            .then((response) => {
+                console.log(response);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
     }
 
     console.log(orders);
@@ -121,7 +131,7 @@ const MyOrder = (props) => {
                                             <br></br>
                                             Quantity: {order.quantity}
                                             <br></br>
-                                            Vendor Details: {order.vendoremail}
+                                            Buyer Details: {order.buyeremail}
                                             <br></br>
                                             Rating: {order.rating}
                                             <br></br>

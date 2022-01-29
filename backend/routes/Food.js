@@ -7,6 +7,7 @@ const Food = require("../models/Food");
 const Order = require("../models/Orders");
 const Vendor = require("../models/Vendors");
 const Buyer = require("../models/Users");
+var nodemailer = require('nodemailer');
 
 router.post("/", (req, res) => {
     // Find user by email
@@ -373,7 +374,7 @@ router.post("/orderrating", (req, res) => {
 
                     food.save()
                         .then(user => {
-                        //    res.status(200).json(user);
+                            //    res.status(200).json(user);
                             console.log(rating);
 
 
@@ -454,6 +455,7 @@ router.post("/orderadd", (req, res) => {
     console.log(req.body);
     let temp = req.body.status;
     let temp2 = req.body.statusstring;
+
     switch (temp) {
         case 0: temp2 = "Placed"
     }
