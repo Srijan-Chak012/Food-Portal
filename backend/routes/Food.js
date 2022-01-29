@@ -320,9 +320,8 @@ router.post("/ordernumbers", (req, res) => {
                 if (temp < 4) {
                     pendingorder = pendingorder + 1;
                 }
-                
-                else if(temp == 4)
-                {
+
+                else if (temp == 4) {
                     completedorder = completedorder + 1;
                 }
                 console.log(orderitem.status);
@@ -342,6 +341,7 @@ router.post("/ordernumbers", (req, res) => {
 router.post("/orderrating", (req, res) => {
     const id = req.body.orderid;
     const rating = req.body.orderrating;
+    const foodid = req.body.foodid;
     // Find user by email
     console.log(id);
     console.log(rating);
@@ -358,15 +358,41 @@ router.post("/orderrating", (req, res) => {
             console.log(order.status);
             order.rating = rating;
 
-            order.save()
-                .then(user => {
-                    res.status(200).json(user);
-                    console.log(rating);
-                })
-                .catch(err => {
-                    res.status(401).send(err);
-                });
+            Food.findOne({ id: foodid }).then(food => {
+                // Check if user email exists
+                if (!food) {
+                    return res.status(401).json({
+                        error: "Food not found",
+                    });
+
+                }
+                else {
+                    console.log(food);
+
+                    food.rating = ((food.rating * (food.itemssold - 1)) + rating) / (food.itemssold);
+
+                    food.save()
+                        .then(user => {
+                        //    res.status(200).json(user);
+                            console.log(rating);
+
+
+                            order.save()
+                                .then(user2 => {
+                                    res.status(200).json(user2);
+                                    console.log(rating);
+                                })
+                                .catch(err => {
+                                    res.status(401).send(err);
+                                });
+                        })
+                        .catch(err => {
+                            res.status(401).send(err);
+                        });
+                }
+            });
         }
+
     });
 });
 

@@ -31,7 +31,7 @@ const Login = (props) => {
       password: password,
 
     };
-
+    console.log(newUser)
     axios
       .post("http://localhost:4000/user/login", newUser)
       .then((response) => {

@@ -172,7 +172,8 @@ const UsersList = (props) => {
   }, []);
 
   useEffect(() => {
-    let temp = fooditems.filter(fooditem => (fooditem.category == "Veg" && vegchecked == true) || (fooditem.category == "NonVeg" && nonvegchecked == true));
+    let temp = fooditems;
+    temp = fooditems.filter(fooditem => (fooditem.category == "Veg" && vegchecked == true) || (fooditem.category == "NonVeg" && nonvegchecked == true));
 
     if (minprice && maxprice)
       temp = temp.filter(fooditem => (parseInt(fooditem.price) >= parseInt(minprice)) && (parseInt(fooditem.price) <= parseInt(maxprice)));
@@ -193,7 +194,17 @@ const UsersList = (props) => {
     console.log(temp)
   }, [vegchecked, nonvegchecked, minprice, maxprice, selecttags, selectshops]);
 
-
+  const calculatetime = () => {
+    axios
+      .post("http://localhost:4000/user/gettime", { email: auth_email })
+      .then((response) => {
+        //  console.log("Repeat?");
+        setShopNames(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   const onSearch = (event) => {
     console.log(event.target.value);
@@ -212,7 +223,7 @@ const UsersList = (props) => {
     temp = fuse.search(searchText).map((fooditem) => fooditem.item);
     console.log(searchText);
     console.log(temp);
-   setItems(temp);
+    setItems(temp);
   }, [searchText])
 
   console.log(shopnames);
@@ -326,7 +337,6 @@ const UsersList = (props) => {
       <Grid container>
         <Grid item xs={12} md={3} lg={3}>
           <List component="nav" aria-label="mailbox folders">
-
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 Price
@@ -386,6 +396,9 @@ const UsersList = (props) => {
               > {shopnames ?
                 shopnames.map((item) => (
                   item.foods.map((food) => (
+                    // (food.tags.length === 0 ? (
+
+                    // ))
                     food.tags.map((tag) => (
                       <MenuItem
                         key={tag.name}
@@ -459,7 +472,7 @@ const UsersList = (props) => {
               <h2>Items Offered</h2>
             </Grid>
           </Paper>
-
+          <h2>Open shops</h2>
           {items.map((fooditem) =>
             <Grid sx={{ margin: 'auto', maxWidth: 500, flexGrow: 1 }}>
               <Grid container spacing={2}>

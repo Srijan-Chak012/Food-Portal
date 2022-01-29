@@ -46,7 +46,7 @@ const OrderSchema = new Schema({
     statusstring: {
         type: String,
         required: false
-    }
+    }, 
 });
 
 

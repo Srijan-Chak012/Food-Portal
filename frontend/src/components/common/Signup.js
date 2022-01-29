@@ -108,7 +108,7 @@ const Signup = (props) => {
         console.log(response.data);
         navigate("/login")
       })
-      .catch(function (error) {
+      .catch((error) => {
         alert("Register failed")
         console.log(error);
       });

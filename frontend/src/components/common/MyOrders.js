@@ -76,7 +76,7 @@ const MyOrder = (props) => {
 
     const saveRating = (order) => {
         axios
-            .post("http://localhost:4000/food/orderrating", { orderid: order.id, orderrating: rating })
+            .post("http://localhost:4000/food/orderrating", { orderid: order.id, orderrating: rating, foodid: order.foodid })
             .then((response) => {
                 alert("Thank you for rating");
                 console.log(response);
